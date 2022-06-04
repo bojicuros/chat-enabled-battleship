@@ -51,7 +51,7 @@ public class ClientThread extends Thread {
 	}
 
 	public void closeAll() {
-		//server.clientDisconnected(this, 0);
+		server.clientDisconnected(this, 0);
 		try {
 			input.close();
 			output.close();

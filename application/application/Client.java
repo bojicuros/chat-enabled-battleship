@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 
-//import javafx.application.Platform;
+import javafx.application.Platform;
 
 public class Client extends Thread {
 
@@ -18,10 +18,10 @@ public class Client extends Thread {
 	private PrintWriter output;
 	private BufferedReader input;
 	private String username;
-	//private ClientApp app;
-	public Client() {
-	//public Client(ClientApp app) {
-		//this.app = app;
+	private ClientApp app;
+
+	public Client(ClientApp app) {
+		this.app = app;
 		try {
 			InetAddress address = InetAddress.getByName("localhost");
 			socket = new Socket(address, SERVER_PORT);
@@ -45,7 +45,7 @@ public class Client extends Thread {
 				serverMessage = input.readLine();
 				if (serverMessage == null)
 					break;
-				//Sstem.out.println(serverMessage);
+				Sstem.out.println(serverMessage);
 			}
 			closeResourses();
 		} catch (IOException e) {
