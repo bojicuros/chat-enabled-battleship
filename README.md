@@ -1,1 +1,1 @@
-# racunarske-mreze
+# Projektni zadatak iz predmeta Računarske mreže
