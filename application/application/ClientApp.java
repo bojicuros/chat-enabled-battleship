@@ -203,7 +203,7 @@ public class ClientApp extends Application {
 				oponentConnected = false;
 				end = false;
 				oponentsName = "";
-				stage.setScene(scene);
+				stage.close();
 			}
 		});
 

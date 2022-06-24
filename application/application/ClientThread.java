@@ -31,7 +31,20 @@ public class ClientThread extends Thread {
 			String message;
 			while (true) {
 				message = input.readLine();
-				
+				String action = message.split(" ")[0];
+				if (action.equals("USERNAME")) {
+					username = message.split(" ")[1];
+					server.addToList(client);
+				} else if (message.equals("DISCONNECTED")) {
+					server.sendToOponent(message, client);
+					closeAll();
+				} else if (message.equals("LEFT_GAME")) {
+					server.sendToOponent("DISCONNECTED", client);
+					server.clientDisconnected(this, 1);
+				} else if (action.equals("CONFIRMATION")) {
+					server.addConfirmation(client, message.split(" ")[1]);
+				} else
+					server.sendToOponent(message, this.client);
 			}
 		} catch (IOException e) {
 			closeAll();
