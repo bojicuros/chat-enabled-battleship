@@ -35,15 +35,15 @@ public class Server {
 	}
 
 	private void sendStart(Socket player1, Socket player2) {
-		String poruka = "START ";
+		String message = "START ";
 		String name1 = getUsername(player1);
 		String name2 = getUsername(player2);
 
 		for (ClientThread thread : threads) {
 			if (thread.getSocket() == player1)
-				thread.sendMessage(poruka + name2 + " " + 0);
+				thread.sendMessage(message + name2 + " " + 0);
 			else if (thread.getSocket() == player2)
-				thread.sendMessage(poruka + name1 + " " + 1);
+				thread.sendMessage(message + name1 + " " + 1);
 		}
 	}
 

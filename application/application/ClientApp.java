@@ -143,6 +143,8 @@ public class ClientApp extends Application {
 				return;
 			if (enemyTurn)
 				return;
+			if(!oponentPlacedShips || shipsToPlace != 0)
+				return;
 
 			Cell cell = (Cell) event.getSource();
 			if (cell.wasShot)
