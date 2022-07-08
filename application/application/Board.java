@@ -17,6 +17,8 @@ public class Board extends Parent {
     private boolean enemy = false;
     public int ships = 5;
 
+
+    // handler sluzi za kliktanje po tabeli
     public Board(boolean enemy, EventHandler<? super MouseEvent> handler) {
         this.enemy = enemy;
         for (int y = 0; y < 10; y++) {
@@ -50,7 +52,7 @@ public class Board extends Parent {
                     Cell cell = getCell(i, y);
                     cell.ship = ship;
                     if (!enemy) {
-                    	cell.setStroke(Color.GREEN);
+                        cell.setStroke(Color.GREEN);
                         cell.setFill(Color.WHITE);
                     }
                 }
@@ -138,13 +140,13 @@ public class Board extends Parent {
 
     public class Cell extends Rectangle {
         public int x, y;
-        public Ship ship = null;
+        public Ship ship = null;  // da li se u celiji nalazi deo broda
         public boolean wasShot = false;
 
         private Board board;
 
         public Cell(int x, int y, Board board) {
-            super(30, 30);
+            super(22, 22);
             this.x = x;
             this.y = y;
             this.board = board;
@@ -158,7 +160,9 @@ public class Board extends Parent {
 
             if (ship != null) {
                 ship.hit();
-                setFill(Color.RED);
+                //setFill(Color.RED);
+                setFill(Color.rgb(128,0,0));
+
                 if (!ship.isAlive()) {
                     board.ships--;
                 }

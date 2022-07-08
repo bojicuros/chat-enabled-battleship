@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class ClientThread extends Thread {
-
 	private Socket client;
 	private String username;
 	private Server server;
@@ -18,7 +17,7 @@ public class ClientThread extends Thread {
 		this.client = client;
 		this.server = server;
 		try {
-			input = new BufferedReader(new InputStreamReader(client.getInputStream()));
+			input = new BufferedReader(new InputStreamReader(client.getInputStream()));  // TODO
 			output = new PrintWriter(client.getOutputStream(), true);
 
 		} catch (IOException e) {
@@ -30,7 +29,8 @@ public class ClientThread extends Thread {
 		try {
 			String message;
 			while (true) {
-				message = input.readLine();
+				message = input.readLine(); // ovoo
+				//ispadne da su oblika USERNAME pero
 				String action = message.split(" ")[0];
 				if (action.equals("USERNAME")) {
 					username = message.split(" ")[1];
@@ -41,9 +41,7 @@ public class ClientThread extends Thread {
 				} else if (message.equals("LEFT_GAME")) {
 					server.sendToOponent("DISCONNECTED", client);
 					server.clientDisconnected(this, 1);
-				} else if (action.equals("CONFIRMATION")) {
-					server.addConfirmation(client, message.split(" ")[1]);
-				} else
+				}else
 					server.sendToOponent(message, this.client);
 			}
 		} catch (IOException e) {

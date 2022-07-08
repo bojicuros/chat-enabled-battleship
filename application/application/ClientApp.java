@@ -1,6 +1,8 @@
 package application;
 
-import java.io.IOException;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Scanner;
 
 import application.Board.Cell;
 import javafx.application.Application;
@@ -31,7 +33,6 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
 public class ClientApp extends Application {
-
 	private Stage stage;
 	private Scene scene;
 	private Client client;
@@ -42,15 +43,17 @@ public class ClientApp extends Application {
 	private String oponentsName;
 	private boolean end = false;
 	private HBox rematch;
-	private Paint color1 = Color.rgb(210, 4, 45);
+	//private Paint color1 = Color.rgb(210, 4, 45);
+	private Paint color1 = Color.YELLOW;
 	private Paint color2 = Color.rgb(5, 210, 45);
 
-	private boolean running = false;
+	private boolean running = false;   // running false znaci da jos postavljamo brodove
 	private Board enemyBoard, playerBoard;
 	private int shipsToPlace = 5;
 	private boolean enemyTurn = false;
 	private boolean oponentPlacedShips = false;
 
+	//ovo je onaj ulazni oblacic
 	@Override
 	public void start(Stage stage) {
 		client = new Client(this);
@@ -77,6 +80,7 @@ public class ClientApp extends Application {
 
 		Label error = new Label();
 		error.setTextFill(Color.RED);
+		error.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
 		error.setManaged(false);
 		error.setVisible(false);
 		start.getChildren().addAll(input, userName, play, error);
@@ -106,8 +110,9 @@ public class ClientApp extends Application {
 		});
 	}
 
+	// one poruke u cosku gore
 	private void refresh() {
-		Platform.runLater(new Runnable() {
+		Platform.runLater(new Runnable() { // TODO MILICA
 
 			@Override
 			public void run() {
@@ -122,7 +127,13 @@ public class ClientApp extends Application {
 				} else {
 					if (end) {
 						report.setText(
-								(playerBoard.ships != 0 ? "You are the winner" : "Winner is " + oponentsName) + "!");
+								(playerBoard.ships != 0 ? "You are the winner " : "Winner is " + oponentsName) +" \uD83D\uDE01 !");
+
+						if(playerBoard.ships != 0){
+							writeInFile(username, oponentsName, "1:0");
+						}
+						report.setTextFill(Color.PURPLE);
+						report.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
 						addRematch();
 					}
 					if (!end && !enemyTurn)
@@ -134,9 +145,65 @@ public class ClientApp extends Application {
 		});
 	}
 
+	//ucitavanje poruka u fajl
+	private static void writeInFile(String username, String oponentsName, String win){
+		try {
+			String filePath = "wins.txt";
+			FileOutputStream f = new FileOutputStream(filePath, true);
+
+			String lineToAppend = username +" , " + oponentsName + " " + win + "\n";
+			byte[] byteArr = lineToAppend.getBytes(); //converting string into byte array
+			f.write(byteArr);
+			f.close();
+
+		} catch (IOException e) {
+			System.out.println("An error occurred.");
+			e.printStackTrace();
+		}
+
+		HashMap<String, Integer> totalScore = new HashMap<>();
+
+		try {
+			File myObj = new File("totalScore.txt");
+			Scanner myReader = new Scanner(myObj);
+			while (myReader.hasNextLine()) {
+				String data = myReader.nextLine();
+				String[] temp = data.split(" : ");
+
+				totalScore.put(temp[0], Integer.parseInt(temp[1]));
+
+			}
+			myReader.close();
+		} catch (FileNotFoundException e) {
+			System.out.println("An error occurred.");
+			e.printStackTrace();
+		}
+
+		if(!totalScore.containsKey(username)){
+			totalScore.put(username, 1);
+		}else{
+			totalScore.put(username, totalScore.get(username) + 1);
+		}
+
+		try {
+			FileWriter myWriter = new FileWriter("totalScore.txt");
+
+			for (String i : totalScore.keySet()) {
+				myWriter.write(i + " : " + totalScore.get(i) + "\n");
+			}
+
+			myWriter.close();
+		} catch (IOException e) {
+			System.out.println("An error occurred.");
+			e.printStackTrace();
+		}
+
+	}
+
+	// pravljenje onih tabela za igranje
 	private Scene makeScene() {
 		BorderPane base = new BorderPane();
-		base.setPrefSize(400, 500);
+		base.setPrefSize(210, 500);
 
 		enemyBoard = new Board(true, event -> {
 			if (!running)
@@ -150,6 +217,7 @@ public class ClientApp extends Application {
 			if (cell.wasShot)
 				return;
 
+			// ako nisi pogodio brod gadja druga osoba
 			enemyTurn = !cell.shoot();
 			client.sendSelect(cell.x + " " + cell.y);
 
@@ -189,12 +257,16 @@ public class ClientApp extends Application {
 		gameChat.getChildren().addAll(base, chat);
 		gameChat.setAlignment(Pos.CENTER);
 
+
+		//TODO one poruke gore desno
 		VBox full = new VBox(10);
-		full.setPadding(new Insets(20, 40, 0, 0));
+		full.setPadding(new Insets(10, 30, 0, 0));
+		//full.setPadding(new Insets(20, 40, 0, 0));
 		report = new Label("");
-		report.setPrefWidth(370);
-		report.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
-		report.setTextFill(Color.rgb(229, 204, 255));
+		report.setPrefWidth(300);
+		report.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
+		report.setTextFill(Color.GREY);
+		//report.setTextFill(Color.rgb(229, 204, 255));
 
 		Button leave = new Button("Leave");
 		leave.setOnAction(new EventHandler<ActionEvent>() {
@@ -209,8 +281,10 @@ public class ClientApp extends Application {
 			}
 		});
 
+		// leave dugme
 		Pane help = new Pane();
-		leave.setLayoutX(450);
+		//leave.setLayoutX(480);
+		leave.setLayoutX(250);
 		leave.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
 		leave.setTextFill(Color.rgb(229, 204, 225));
 		leave.setStyle("-fx-background-color: #B22222;");
@@ -229,21 +303,30 @@ public class ClientApp extends Application {
 	private VBox makeChat() {
 		show = new TextFlow();
 		show.setStyle("-fx-background-color: #191970; -fx-text-box-border: transparent;");
-		show.setPrefHeight(450);
-		show.setPrefWidth(300);
+//        show.setPrefHeight(350);
+//        show.setPrefWidth(200);
+
+		show.setPrefHeight(330);
+		show.setPrefWidth(200);
+
 		show.setPadding(new Insets(10));
 
 		TextField input = new TextField();
-		input.setPrefWidth(300);
+
+//        input.setPrefWidth(300);
+		input.setPrefWidth(200);
 		input.setPrefHeight(31);
 		input.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
 		input.setStyle("-fx-control-inner-background: #2A59A9; -fx-text-box-border: transparent;");
+
+		// da se salje sa enter
 		input.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 				if (oponentConnected)
 					client.sendMessage(input.getText());
 
+				// uzima username nalepi : doda ostatak poruke i doda sve to u listu koju ptikazuje
 				if (!input.getText().isEmpty()) {
 					Text name = new Text(client.getUsername() + ": ");
 					name.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
@@ -262,6 +345,8 @@ public class ClientApp extends Application {
 		send.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
 		send.setTextFill(Color.rgb(25, 25, 112));
 		send.setStyle("-fx-background-color: #2A59A9;");
+
+		// da se poruka salje sa send dugmetom
 		send.setOnAction(e -> {
 
 			if (oponentConnected)
@@ -295,6 +380,8 @@ public class ClientApp extends Application {
 		return chat;
 	}
 
+	// za protivnikove poruke, primanje i njihov ispis
+	// TODO KAKO
 	public void addToChat(String message) {
 		if (message.split(":").length >= 2) {
 			Text name = new Text(oponentsName + ":");
@@ -314,27 +401,31 @@ public class ClientApp extends Application {
 
 	public void disconnectedOponent() {
 		report.setText(oponentsName + " has left game");
-		removeFromRematch();
+		//removeFromRematch();
 		enemyTurn = true;
 		end = false;
 		oponentConnected = false;
 	}
 
+	// postavlja dugme oces revans ili ne
 	public void addRematch() {
 		Label again = new Label("Play again?");
 		again.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
-		again.setTextFill(Color.rgb(42, 89, 169));
+		//again.setTextFill(Color.rgb(42, 89, 169));
+		again.setTextFill(Color.PURPLE);
 		Button yes = new Button("Yes");
 		yes.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
-		yes.setTextFill(Color.rgb(25, 25, 112));
-		yes.setStyle("-fx-background-color: #2A59A9;");
+		// yes.setTextFill(Color.rgb(25, 25, 112));
+		//yes.setStyle("-fx-background-color: #2A59A9;");
+		yes.setTextFill(Color.WHITE);
+		yes.setStyle("-fx-background-color: #32cd32;");
 
 		yes.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 				client.sendConfirmation("1");
 				reset();
-				removeFromRematch();
+				//removeFromRematch();
 				report.setText("Waiting for response");
 				end = false;
 			}
@@ -342,15 +433,16 @@ public class ClientApp extends Application {
 
 		Button no = new Button("No");
 		no.setFont(Font.font("Verdana", FontWeight.NORMAL, 15));
-		no.setTextFill(Color.rgb(25, 25, 112));
-		no.setStyle("-fx-background-color: #2A59A9;");
+		no.setTextFill(Color.WHITE);
+		no.setStyle("-fx-background-color: #800000;");
+		//no.setTextFill(Color.rgb(25, 25, 112));
+		//no.setStyle("-fx-background-color: #2A59A9;");
 
 		no.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 				client.sendConfirmation("0");
 				client.sendLeftGame();
-				removeFromRematch();
 				oponentConnected = false;
 				end = false;
 				oponentsName = "";
@@ -360,19 +452,6 @@ public class ClientApp extends Application {
 		rematch.getChildren().addAll(again, yes, no);
 	}
 
-	public void removeFromRematch() {
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					rematch.getChildren().clear();
-				} catch (NullPointerException e) {
-					return;
-				}
-			}
-		});
-	}
-
 	public void reset() {
 		Platform.runLater(new Runnable() {
 			@Override
@@ -380,7 +459,10 @@ public class ClientApp extends Application {
 				shipsToPlace = 5;
 				running = false;
 				oponentPlacedShips = false;
-				/* TO DO */
+				stage.setScene(makeScene());
+				stage.centerOnScreen();
+				stage.show();
+				refresh();
 			}
 		});
 	}

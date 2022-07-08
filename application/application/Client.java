@@ -12,7 +12,6 @@ import java.net.Socket;
 import javafx.application.Platform;
 
 public class Client extends Thread {
-
 	private static int SERVER_PORT = 9876;
 	private Socket socket;
 	private PrintWriter output;
@@ -23,8 +22,8 @@ public class Client extends Thread {
 	public Client(ClientApp app) {
 		this.app = app;
 		try {
-			InetAddress address = InetAddress.getByName("localhost");
-			socket = new Socket(address, SERVER_PORT);
+			InetAddress address = InetAddress.getByName("localhost"); // adresa klijenta
+			socket = new Socket(address, SERVER_PORT);  //povezan sa te oadrese na taj server
 			input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			output = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
 			System.out.println("Client connected!");
@@ -43,7 +42,7 @@ public class Client extends Thread {
 		try {
 			String serverMessage;
 			while (true) {
-				serverMessage = input.readLine();
+				serverMessage = input.readLine();  //osluskuje i cita koju i da li postu dobija
 				if (serverMessage == null)
 					break;
 				String action = serverMessage.split(" ")[0];
@@ -57,8 +56,12 @@ public class Client extends Thread {
 						app.setEnemyTurn(true);
 					app.setOponentConnected();
 				} else if (action.equals("MESSAGE")) {
+
+					// TODO pravi nesto za slanje poruka u cetu
+
 					String message = serverMessage.substring(8);
-					Platform.runLater(new Runnable() {
+					Platform.runLater(new Runnable() {  // anonimna funkcija, runnable interfejs
+						//posalje instancu treda i opet i opet ga pokrece
 
 						@Override
 						public void run() {
@@ -67,6 +70,7 @@ public class Client extends Thread {
 
 					});
 				} else if (action.equals("PLACE")) {
+					// postavi brod
 					String place = serverMessage.substring(6);
 					Platform.runLater(new Runnable() {
 
@@ -77,6 +81,7 @@ public class Client extends Thread {
 
 					});
 				} else if (action.equals("SELECT")) {
+					// selektuj celiju
 					String select = serverMessage.substring(7);
 					Platform.runLater(new Runnable() {
 
@@ -115,7 +120,7 @@ public class Client extends Thread {
 	public void sendPlace(String place) {
 		output.println("PLACE " + place);
 	}
-	
+
 	public void sendSelect(String select) {
 		output.println("SELECT " + select);
 	}

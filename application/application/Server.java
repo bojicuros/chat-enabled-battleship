@@ -11,8 +11,6 @@ public class Server {
 	private ServerSocket serverSocket = null;
 	private ArrayList<ArrayList<Socket>> clients = new ArrayList<ArrayList<Socket>>();
 	private ArrayList<ClientThread> threads = new ArrayList<>();
-	private ArrayList<ArrayList<Integer>> rematches = new ArrayList<ArrayList<Integer>>();
-
 
 	public Server() throws IOException {
 		serverSocket = new ServerSocket(SERVER_PORT);
@@ -24,7 +22,7 @@ public class Server {
 		while (true) {
 			Socket socket = null;
 			try {
-				socket = serverSocket.accept();
+				socket = serverSocket.accept();  // novi soket na serveru za obradu i prihvatanje klijenata
 				ClientThread client = new ClientThread(socket, this);
 				client.start();
 				threads.add(client);
@@ -47,6 +45,7 @@ public class Server {
 		}
 	}
 
+	//uzima listu klijenata i uporedjuje sa prosledjenim klijentom i onda gleda listu niti i ako nadje istu nit salje poruku
 	public void sendToOponent(String message, Socket client) {
 		for (ArrayList<Socket> list : clients) {
 			if (list.size() == 2 && (client == list.get(0) || client == list.get(1))) {
@@ -60,6 +59,7 @@ public class Server {
 		}
 	}
 
+	//dodavanje u listu igraca, ukoliko je neuparen igrac upari ga, ako su svi upareni onda ga samo dodaj
 	public synchronized void addToList(Socket socket) {
 		if (!clients.isEmpty() && clients.get(clients.size() - 1).size() == 1) {
 			clients.get(clients.size() - 1).add(socket);
@@ -67,8 +67,6 @@ public class Server {
 			Socket player2 = clients.get(clients.size() - 1).get(1);
 			sendStart(player1, player2);
 
-			ArrayList<Integer> list = new ArrayList<Integer>(Arrays.asList(-1, -1));
-			rematches.add(list);
 		} else {
 			ArrayList<Socket> pairOfClients = new ArrayList<>();
 			pairOfClients.add(socket);
@@ -76,8 +74,8 @@ public class Server {
 		}
 	}
 
+	// ukoliko hoce klijent da se diskonektuje uklonimo ga iz liste niti pa ga trazimo u listi klijenata i uklanjamo i iz nje
 	public synchronized void clientDisconnected(ClientThread client, int action) {
-
 		if (action == 0)
 			threads.remove(client);
 		int index = -1;
@@ -89,34 +87,10 @@ public class Server {
 		}
 		if (index != -1) {
 			clients.remove(index);
-			if (!rematches.isEmpty())
-				rematches.remove(index);
 		}
 	}
 
-	public synchronized void addConfirmation(Socket client, String value) {
-		int index = -1;
-		for (int i = 0; i < clients.size(); i++) {
-			if (client.equals(clients.get(i).get(0))
-					|| (clients.get(i).size() == 2 && client.equals(clients.get(i).get(1)))) {
-				index = i;
-			}
-		}
-		if (index != -1) {
-			int confirmation = rematches.get(index).get(0);
-			if (confirmation == -1)
-				rematches.get(index).set(0, 1);
-			else {
-				rematches.get(index).set(1, 1);
-				if (rematches.get(index).get(0) == 1 && rematches.get(index).get(1) == 1) {
-					sendStart(clients.get(index).get(0), clients.get(index).get(1));
-					rematches.get(index).set(0, -1);
-					rematches.get(index).set(1, -1);
-				}
-			}
-		}
-	}
-
+	// oce da vrati username ako ga ne nadje u nitima vraca prazno
 	private String getUsername(Socket player) {
 		for (ClientThread thread : threads) {
 			if (thread.getSocket() == player)
